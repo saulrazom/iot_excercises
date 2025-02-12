@@ -12,16 +12,40 @@ net2 = [[0, 4, 2, 1, 3, 5, 5, 6, 8, 6], [3, 0, 6, 5, 7, 2, 2, 5, 8, 2], [2, 3, 0
         [1, 2, 3, 4, 5, 6, 7, 4, 8, 3], [6, 5, 4, 3, 2, 1, 7, 8, 5, 3], [6, 3, 8, 7, 9, 1, 2, 5, 4, 5],
         [7, 3, 8, 9, 1, 2, 6, 5, 4, 6]]  # min_distance = 19
 net3 = random_net(11)  # min_distance = ??
-net  = net1
+net  = net2
 
 
 def process(st, k, visited, solution, d):
-    return 0
+    # Si k = n, ya tenemos la permutación completa y podemos devolver la distancia total
+    n = len(net)
+    if k == n:
+        return d + net[solution[k - 1]][st]
+    #Si no, tenemos que intentar todas las posibilidades para la posición k, y devolver la mínima distancia de todas.
+    minD = float('inf')
+    for i in range(n):
+        if not visited[i]:
+            visited[i] = True
+            solution[k] = i
+            # d = process(st, k+1, ...)
+            # minD = min(minD, d)
+            minD = min(minD, process(st, k + 1, visited, solution, d + net[solution[k - 1]][solution[k]]))
+            visited[i] = False
+    return minD
+   
+
 
 
 def tsp_exhaustive(st):
-    return 0
-
+    n = len(net)
+    # Si st = 2, n = 6
+    # ¿ Cómo generamos estas listas por "Comprensión"?
+    # visited = [ False, False, True, False, False, False] --> Tamaño N
+    # solution = [2, -1, -1, -1, -1, 2] --> Tamaño N + 1
+    # Llamar a process pasando estos datos con k = 1, d = 0
+    visited = [False if i != st else True for i in range(n)]
+    solution = [st if i == 0 or i == n else -1 for i in range(n + 1)]
+    return process(st, 1, visited, solution, 0)
+    
 
 def get_nearest(st, visited):
     return 0
@@ -42,7 +66,7 @@ def tsp_random(start, n):
 if __name__ == '__main__':
     minD = tsp_random(0, 10000)
     print(minD)
-    minD = tsp_exhaustive(0)
+    minD = tsp_exhaustive(2)
     print(minD)
     minD = tsp_nearest_neighbor(0)
     print(minD)
