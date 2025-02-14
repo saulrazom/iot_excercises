@@ -45,13 +45,38 @@ def tsp_exhaustive(st, nt):
     return process(st, 1, visited, solution, 0, nt)
     
 
-#### Algoritmo vecino más cercano
-def get_nearest(st, visited):
-    return 0
+def get_nearest(st, visited, nt):
+    n = len(nt)
+    nearest = -1
+    minD = float('inf')
+    for i in range(n):
+        if not visited[i] and nt[st][i] < minD:
+            minD = nt[st][i]
+            nearest = i
+    return nearest
 
-
-def tsp_nearest_neighbor(start):
-    return 0
+def tsp_nearest_neighbor(start, nt):  # El método recibe el índice del nodo inicial/final S y el grafo G.
+    n = len(nt)
+    # Sea C(urrent) <- S(tart)
+    curr = start
+    # Añadir S a los visitados
+    visited = [False for _ in range(n)]
+    visited[start] = True
+    minD = 0
+    # Repetir N – 1 veces:
+    for _ in range(n - 1):
+        # Sea N(earest) el índice del nodo no visitado más cercano a C, utilizando G
+        nearest = get_nearest(curr, visited, nt)
+        # Añadir N a los visitados
+        visited[nearest] = True
+        # Sumar a la distancia total la distancia de C a N
+        minD += nt[curr][nearest]
+        # C <- N
+        curr = nearest
+    # Sumar a la distancia total la distancia de N a S
+    minD += nt[curr][start]
+    # Devolver la distancia total
+    return minD
 
 
 #### Algoritmo aleatorio
@@ -86,17 +111,19 @@ def tsp_random(start, m, nt): # m = iterations
     return minD
 
 if __name__ == '__main__':
+    test_net = net
+    print(f"\n{test_net}\n")
     start = time()
-    minD = tsp_random(0, 100000, net)
+    minD = tsp_random(0, 100000, test_net)
     end = time()
     print(f"\nTSP RANDOM\nMin distance: {minD}\n{(end - start):.2f} seconds")
 
     start = time()
-    minD = tsp_exhaustive(2, net)
+    minD = tsp_exhaustive(2, test_net)
     end = time()
     print(f"\nTSP EXHAUSTIVE\nMin distance: {minD}\n{(end - start):.2f} seconds")
 
     start = time()
-    minD = tsp_nearest_neighbor(0)
+    minD = tsp_nearest_neighbor(0, test_net)
     end = time()
     print(f"\nTSP NEAREST NEIGHBOR\nMin distance: {minD}\n{(end - start):.2f} seconds")
