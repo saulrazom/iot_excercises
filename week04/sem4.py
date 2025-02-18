@@ -13,7 +13,6 @@ net2 = [[0, 4, 2, 1, 3, 5, 5, 6, 8, 6], [3, 0, 6, 5, 7, 2, 2, 5, 8, 2], [2, 3, 0
         [1, 2, 3, 4, 5, 6, 7, 4, 8, 3], [6, 5, 4, 3, 2, 1, 7, 8, 5, 3], [6, 3, 8, 7, 9, 1, 2, 5, 4, 5],
         [7, 3, 8, 9, 1, 2, 6, 5, 4, 6]]  # min_distance = 19
 net3 = random_net(11)  # min_distance = ??
-net  = net2
 
 #### Algoritmo exhaustivo
 def process(st, k, visited, solution, d, nt):
@@ -55,6 +54,7 @@ def get_nearest(st, visited, nt):
             nearest = i
     return nearest
 
+### Algoritmo de vecino más cercano
 def tsp_nearest_neighbor(start, nt):  # El método recibe el índice del nodo inicial/final S y el grafo G.
     n = len(nt)
     # Sea C(urrent) <- S(tart)
@@ -111,8 +111,9 @@ def tsp_random(start, m, nt): # m = iterations
     return minD
 
 if __name__ == '__main__':
-    test_net = net
-    print(f"\n{test_net}\n")
+    test_net = net3
+    for row in test_net:
+        print("  ".join(f"{num:2d}" for num in row))
     start = time()
     minD = tsp_random(0, 100000, test_net)
     end = time()
