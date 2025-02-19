@@ -1,6 +1,7 @@
 #import random
-from random import uniform, shuffle, seed
+from random import uniform, shuffle, seed, choice
 from time import time
+from math import exp
 
 
 def random_net(n):
@@ -80,15 +81,6 @@ def tsp_nearest_neighbor(start, nt):  # El método recibe el índice del nodo in
 
 
 #### Algoritmo aleatorio
-def eval(start, solution, nt):
-    #calcular la distancia de la solución/secuencia utilizando G
-    d = 0
-    n = len(nt)
-    for i in range(n - 1):
-        d += nt[solution[i]][solution[i + 1]]
-    d += nt[solution[-1]][start]
-    return d
-   
 def tsp_random(start, m, nt): # m = iterations
     n = len(nt)
     # Solución inicial [0, 1, 2.., N – 2] reemplazando S por N – 1
@@ -110,6 +102,86 @@ def tsp_random(start, m, nt): # m = iterations
 
     return minD
 
+def eval(start, solution, nt):
+    d = 0
+    n = len(solution)
+    d += nt[start][solution[0]]
+    for i in range(n - 1):
+        d += nt[solution[i]][solution[i + 1]]
+    d += nt[solution[-1]][start]
+    return d
+
+#### Reconocido Simulado
+def swap(solution):
+    n = len(solution)
+    i = int(uniform(0, n))
+    j = int(uniform(0, n))
+    while i == j:  
+        j = int(uniform(0, n))
+    solution[i], solution[j] = solution[j], solution[i]
+    return solution
+
+def inverse(solution):
+    n = len(solution)
+    i = int(uniform(0, n))
+    j = int(uniform(0, n))
+    if i > j:
+        i, j = j, i
+    solution[i:j] = solution[i:j][::-1]
+    return solution
+
+def insert(solution):
+    n = len(solution)
+    i = int(uniform(0, n))
+    j = int(uniform(0, n))
+    while i == j: 
+        j = int(uniform(0, n))
+    solution.insert(j, solution.pop(i))
+    return solution
+    
+def move_to_neighbor(solution):
+    perturbation = choice([swap, inverse, insert])
+    return perturbation(solution)
+
+# Función fitness (energía)
+def f(start, solution, nt):
+    return 1 / eval(start, solution, nt)
+
+def tsp_sa(start, n, nt):
+    T = 100  
+    alpha = 0.99 
+    d = 100000
+    
+    # x1 = permutación aleatoria sin incluir a start
+    x1 = [i for i in range(len(nt)) if i != start]
+    
+    for _ in range(n):
+        # x2 = un nuevo vecino de x1
+        x2 = move_to_neighbor(x1.copy())
+        
+        # calcular fx1, fx2
+        fx1 = f(start, x1, nt)
+        fx2 = f(start, x2, nt)
+        
+        # si x2 mejoró/empató a x1, reemplazarlo
+        if fx2 >= fx1:
+            x1 = x2
+        # si no, utilizar la distribución de probabilidad de Boltzmann
+        else:
+            if uniform(0, 1) < exp((fx2 - fx1) / T):
+                x1 = x2
+        
+        # actualizar d 
+        current_distance = eval(start, x1, nt)
+        if current_distance < d:
+            d = current_distance
+        
+        T *= alpha
+    
+    return d
+
+
+
 if __name__ == '__main__':
     test_net = net3
     for row in test_net:
@@ -128,3 +200,8 @@ if __name__ == '__main__':
     minD = tsp_nearest_neighbor(0, test_net)
     end = time()
     print(f"\nTSP NEAREST NEIGHBOR\nMin distance: {minD}\n{(end - start):.2f} seconds")
+
+    start = time()
+    minD = tsp_sa(0, 100000, test_net)
+    end = time()
+    print(f"\nTSP SA\nMin distance: {minD}\n{(end - start):.2f} seconds")
